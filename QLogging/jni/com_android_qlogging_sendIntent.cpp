@@ -109,9 +109,11 @@ static void setLogging(JNIEnv* env, jclass clazz,jstring jlog_layer, jint log_le
                     set_level = 0xF;
                 else
                     set_level = values[log_level-1];
-
-                uint8_t array[3]={0x11,values[index],set_level};
-                sBluetoothInterface->hci_cmd_send(HCI_OPCODE_PACK(0x3F,0x17),array,3);
+                if ((index < 7) && (index >= 0))
+                {
+                    uint8_t array[3]={0x11,values[index],set_level};
+                    sBluetoothInterface->hci_cmd_send(HCI_OPCODE_PACK(0x3F,0x17),array,3);
+                }
             }
             else if( module == 4)
             {
@@ -149,11 +151,12 @@ static void setLogging(JNIEnv* env, jclass clazz,jstring jlog_layer, jint log_le
                 strlcpy(str,vsc_data,strlen(vsc_data)+1);
                 int count_t = 0;
                 char* token_pointer;
-                token_pointer = strtok(str, ",");
+                char *tmp_token = NULL;
+                token_pointer = strtok_r(str, ",", &tmp_token);
                 while ((NULL != token_pointer) && (count_t < PAYLOAD_LENGTH))
                 {
                     vsc_data_t[count_t] = (uint8_t)strtol(token_pointer,NULL,16);
-                    token_pointer = strtok(NULL, ",");
+                    token_pointer = strtok_r(NULL, ",", &tmp_token);
                     count_t++;
                 }
                 ALOGD("Total count:%d ",count_t );
